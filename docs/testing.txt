@@ -1,20 +1,20 @@
 # GET
-curl -X GET http://localhost:8000/actividades
+curl -X GET http://localhost:8800/actividades
 
 
 # GET {_id}
-curl -X GET http://localhost:8000/actividades/<_id>
+curl -X GET http://localhost:8800/actividades/<_id>
 
 
 # POST
-curl -X POST http://localhost:8000/actividades -H "Content-Type: application/json" -d '{"Nombre": "Tarea de ejemplo","Categoria": "Trabajo","Descripcion": "Completar el informe mensual","Prioridad": "Alta","Fin": "2024-06-30T18:00:00"}'
+curl -X POST http://localhost:8800/actividades -H "Content-Type: application/json" -d '{"Nombre":"Prueba CURL", "Categoria": "CURL","Descripcion":"Prueba con CURL", "Prioridad":"Alta", "Fin":"2024-06-30T18:00:00"}'
 
 
 # PUT
-curl -X PUT http://localhost:8000/actividades/<_id> `
+curl -X PUT http://localhost:8800/actividades/<_id> `
   -H "Content-Type: application/json" `
-  -d '{ "Nombre": "Tarea actualizada", "Categoria": "Personal", "Descripcion": "Actualizar informe", "Prioridad": "Media", "Fin": "2024-07-01T12:00:00" }'
+  -d '{ "Nombre":"Cliente Nutec", "Categoria":"Cliente", "Descripcion":"Actualizacion por CURL","Prioridad":"Urgente", "Fin":"2024-07-01T12:00:00" }'
 
 
 # DELETE
-curl -X DELETE http://localhost:8000/actividades/<_id>
+curl -X DELETE http://localhost:8800/actividades/<_id>

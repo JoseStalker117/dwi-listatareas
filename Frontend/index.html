@@ -45,19 +45,54 @@
     <hr><br>
 
     <div class="filters">
+      <input type="text" id="categoryFilter" placeholder="Filtrar por categoría..." />
+      <input type="text" id="nameFilter" placeholder="Filtrar por nombre..." />
       <select id="statusFilter">
         <option value="all">Todas</option>
         <option value="pending">Pendientes</option>
         <option value="completed">Completadas</option>
       </select>
-      <input type="text" id="categoryFilter" placeholder="Filtrar por categoría..." />
+      <select id="dateOrder">
+        <option value="desc">Fecha más reciente</option>
+        <option value="asc">Fecha más antigua</option>
+      </select>
       <button id="applyFilters">Filtrar</button>
       <button id="clearFilters">Limpiar Filtros</button>
     </div>
 
     <div id="taskList"></div>
   </div>
+
+  <div id="editModal">
+    <div class="modal-content">
+      <h3>Editar Actividad</h3>
+      <form id="editForm">
+        <input type="hidden" id="editId" />
+        <label>Nombre</label>
+        <input type="text" id="editNombre" required />
+        <label>Categoría</label>
+        <input type="text" id="editCategoria" />
+        <label>Descripción</label>
+        <textarea id="editDescripcion"></textarea>
+        <label>Prioridad</label>
+        <select id="editPrioridad" required>
+          <option value="Baja">Baja</option>
+          <option value="Media">Media</option>
+          <option value="Alta">Alta</option>
+          <option value="Urgente">Urgente</option>
+          <option value="Completada">Completada</option>
+        </select>
+        <label>Fin</label>
+        <input type="datetime-local" id="editFin" required />
+        <div class="modal-actions">
+          <button type="button" id="closeEditModal">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="{% static 'scripts.js' %}"></script>
 </body>
-<script src="{% static 'scripts.js' %}"></script>
+
 
 </html>

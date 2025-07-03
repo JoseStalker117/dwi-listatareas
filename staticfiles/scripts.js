@@ -6,7 +6,9 @@ const priorityInput = document.getElementById('priorityInput');
 const finInput = document.getElementById('finInput');
 const taskList = document.getElementById('taskList');
 const statusFilter = document.getElementById('statusFilter');
+const nameFilter = document.getElementById('nameFilter');
 const categoryFilter = document.getElementById('categoryFilter');
+const dateOrder = document.getElementById('dateOrder');
 const applyFilters = document.getElementById('applyFilters');
 const clearFilters = document.getElementById('clearFilters');
 
@@ -14,13 +16,13 @@ let tasks = [];
 let editingId = null;
 
 async function fetchTasks() {
-  const res = await fetch('http://localhost:8800/actividades');
+  const res = await fetch('https://dwi-fastapi.onrender.com/actividades');
   tasks = await res.json();
   renderTasks();
 }
 
 async function createTask(task) {
-  const res = await fetch('http://localhost:8800/actividades', {
+  const res = await fetch('https://dwi-fastapi.onrender.com/actividades', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -30,8 +32,8 @@ async function createTask(task) {
   }
 }
 
-async function updateTask(id, task) {
-  const res = await fetch(`http://localhost:8800/actividades/${id}`, {
+async function updateTask(_id, task) {
+  const res = await fetch(`https://dwi-fastapi.onrender.com/actividades/${_id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -41,8 +43,8 @@ async function updateTask(id, task) {
   }
 }
 
-async function deleteTask(id) {
-  const res = await fetch(`http://localhost:8800/actividades/${id}`, {
+async function deleteTask(_id) {
+  const res = await fetch(`https://dwi-fastapi.onrender.com/actividades/${_id}`, {
     method: 'DELETE'
   });
   if (res.ok) {
@@ -67,14 +69,23 @@ function getTaskColor(task) {
 function renderTasks() {
   taskList.innerHTML = '';
   const status = statusFilter.value;
-  const category = categoryFilter.value.trim().toLowerCase();
+  const name = (nameFilter?.value || '').trim().toLowerCase();
+  const category = (categoryFilter?.value || '').trim().toLowerCase();
+  const order = (dateOrder?.value || 'desc');
 
-  const filtered = tasks.filter(t => {
+  let filtered = tasks.filter(t => {
     const statusMatch = status === 'all' ||
-      (status === 'pending' && t.Prioridad !== 'Completada') ||
-      (status === 'completed' && t.Prioridad === 'Completada');
+      (status === 'pending' && !t.Estatus) ||
+      (status === 'completed' && t.Estatus);
+    const nameMatch = !name || t.Nombre.toLowerCase().includes(name);
     const categoryMatch = !category || t.Categoria.toLowerCase().includes(category);
-    return statusMatch && categoryMatch;
+    return statusMatch && nameMatch && categoryMatch;
+  });
+
+  filtered = filtered.sort((a, b) => {
+    const dateA = new Date(a.Fecha);
+    const dateB = new Date(b.Fecha);
+    return order === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   if (filtered.length === 0) {
@@ -84,23 +95,23 @@ function renderTasks() {
 
   filtered.forEach((task) => {
     const div = document.createElement('div');
-    div.className = `task ${getTaskColor(task)}`;
-    div.dataset.id = task.id;
+    div.className = `task ${getTaskColor(task)}${task.Estatus ? ' completed' : ''}`;
+    div.dataset._id = task._id;
     div.innerHTML = `
-      <div class="task-header">
-        <span class="title ${task.Prioridad === 'Completada' ? 'completed' : ''}">
-          <strong>${task.Nombre}</strong> ${task.Categoria ? `[${task.Categoria}]` : ''}
+      <div class="task-header${task.Estatus ? ' completed' : ''}">
+        <span class="title">
+           <strong>${task.Categoria ? `[${task.Categoria}]` : ''}</strong> ${task.Nombre}
         </span>
         <div class="task-buttons">
-          <button class="complete-btn">${task.Prioridad === 'Completada' ? 'Marcar Pendiente' : 'Completar'}</button>
+          <button class="complete-btn">${task.Estatus ? 'Marcar Pendiente' : 'Completar'}</button>
           <button class="edit-btn">Editar</button>
           <button class="delete-btn">Eliminar</button>
         </div>
       </div>
       ${task.Descripcion ? `<p><strong>Descripción:</strong> ${task.Descripcion}</p>` : ''}
       <div class="task-dates">
-        <small><strong>Creada:</strong> ${task.Fecha ? new Date(task.Fecha).toLocaleString() : ''}</small><br/>
-        <small><strong>Fin:</strong> ${task.Fin ? new Date(task.Fin).toLocaleString() : ''}</small>
+        <small><strong>Creada:</strong> ${task.Fecha ? new Date(task.Fecha).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</small><br/>
+        <small><strong>Fin:</strong> ${task.Fin ? new Date(task.Fin).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</small>
       </div>
       <div class="task-priority">
         <small><strong>Prioridad:</strong> ${task.Prioridad}</small>
@@ -110,29 +121,25 @@ function renderTasks() {
   });
 }
 
-// Delegación de eventos para los botones
-// Esto asegura que los botones funcionen aunque se regenere el HTML
 taskList.addEventListener('click', async (e) => {
   const btn = e.target;
   const div = btn.closest('.task');
   if (!div) return;
-  const id = div.dataset.id;
-  const task = tasks.find(t => t.id === id);
+  const _id = div.dataset._id;
+  const task = tasks.find(t => t._id === _id);
   if (!task) return;
 
   if (btn.classList.contains('complete-btn')) {
-    const nuevaPrioridad = task.Prioridad === 'Completada' ? 'Pendiente' : 'Completada';
-    await updateTask(id, { ...task, Prioridad: nuevaPrioridad });
+    const nuevoEstatus = !task.Estatus;
+    div.classList.toggle('completed', nuevoEstatus);
+    div.querySelector('.task-header').classList.toggle('completed', nuevoEstatus);
+    await updateTask(_id, { Estatus: nuevoEstatus });
+    await fetchTasks();
   } else if (btn.classList.contains('edit-btn')) {
-    taskInput.value = task.Nombre;
-    categoryInput.value = task.Categoria;
-    descriptionInput.value = task.Descripcion;
-    priorityInput.value = task.Prioridad;
-    finInput.value = task.Fin ? task.Fin.slice(0, 16) : '';
-    editingId = id;
+    openEditModal(task);
   } else if (btn.classList.contains('delete-btn')) {
     if (confirm('¿Eliminar esta tarea?')) {
-      await deleteTask(id);
+      await deleteTask(_id);
     }
   }
 });
@@ -158,14 +165,66 @@ form.addEventListener('submit', async (e) => {
 });
 
 applyFilters.addEventListener('click', renderTasks);
+
+[nameFilter, categoryFilter, statusFilter, dateOrder].forEach(el => {
+  if (el) {
+    el.addEventListener('change', renderTasks);
+    el.addEventListener('input', renderTasks);
+  }
+});
+
 clearFilters.addEventListener('click', () => {
   statusFilter.value = 'all';
+  nameFilter.value = '';
   categoryFilter.value = '';
+  dateOrder.value = 'desc';
   renderTasks();
 });
 
-// Inicializar
-fetchTasks();
+// Modal de edición
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+const closeEditModalBtn = document.getElementById('closeEditModal');
+
+function openEditModal(task) {
+  document.getElementById('editId').value = task._id;
+  document.getElementById('editNombre').value = task.Nombre;
+  document.getElementById('editCategoria').value = task.Categoria;
+  document.getElementById('editDescripcion').value = task.Descripcion;
+  document.getElementById('editPrioridad').value = task.Prioridad;
+  document.getElementById('editFin').value = task.Fin ? task.Fin.slice(0, 16) : '';
+  editModal.style.display = 'flex';
+}
+
+closeEditModalBtn.onclick = () => {
+  editModal.style.display = 'none';
+};
+
+editForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const _id = document.getElementById('editId').value;
+  const Nombre = document.getElementById('editNombre').value.trim();
+  const Categoria = document.getElementById('editCategoria').value.trim();
+  const Descripcion = document.getElementById('editDescripcion').value.trim();
+  const Prioridad = document.getElementById('editPrioridad').value.trim();
+  const Fin = document.getElementById('editFin').value;
+  if (Nombre) {
+    await updateTask(_id, { Nombre, Categoria, Descripcion, Prioridad, Fin });
+    editModal.style.display = 'none';
+  }
+};
+
+window.onclick = function(event) {
+  if (event.target === editModal) {
+    editModal.style.display = 'none';
+  }
+};
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape' && editModal.style.display === 'flex') {
+    editModal.style.display = 'none';
+  }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   const finInput = document.getElementById('finInput');
@@ -179,4 +238,5 @@ document.addEventListener('DOMContentLoaded', function() {
     const min = '00';
     finInput.value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   }
+  fetchTasks();
 });

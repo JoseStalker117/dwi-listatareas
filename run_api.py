@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import uvicorn
 import os
 from dotenv import load_dotenv
@@ -10,7 +9,7 @@ def main():
     
     # Configuración del servidor
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", 8801))
+    port = int(os.getenv("PORT", 8800))
     reload = os.getenv("RELOAD", "true").lower() == "true"
     
     print(f"🚀 Iniciando API de Transacciones MongoDB...")
