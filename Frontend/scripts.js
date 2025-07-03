@@ -14,13 +14,13 @@ let tasks = [];
 let editingId = null;
 
 async function fetchTasks() {
-  const res = await fetch('https://dwi-listatareas-xw3r.onrender.com:10000/actividades');
+  const res = await fetch('https://dwi-listatareas-xw3r.onrender.com/actividades');
   tasks = await res.json();
   renderTasks();
 }
 
 async function createTask(task) {
-  const res = await fetch('https://dwi-listatareas-xw3r.onrender.com:10000/actividades', {
+  const res = await fetch('https://dwi-listatareas-xw3r.onrender.com/actividades', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -31,7 +31,7 @@ async function createTask(task) {
 }
 
 async function updateTask(id, task) {
-  const res = await fetch(`https://dwi-listatareas-xw3r.onrender.com:10000/actividades/${id}`, {
+  const res = await fetch(`https://dwi-listatareas-xw3r.onrender.com/actividades/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -42,7 +42,7 @@ async function updateTask(id, task) {
 }
 
 async function deleteTask(id) {
-  const res = await fetch(`https://dwi-listatareas-xw3r.onrender.com:10000/actividades/${id}`, {
+  const res = await fetch(`https://dwi-listatareas-xw3r.onrender.com/actividades/${id}`, {
     method: 'DELETE'
   });
   if (res.ok) {
