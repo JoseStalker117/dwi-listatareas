@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Script para ejecutar la API de Transacciones MongoDB
-"""
 
 import uvicorn
 import os
