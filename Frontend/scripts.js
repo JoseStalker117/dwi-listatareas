@@ -52,6 +52,28 @@ async function deleteTask(_id) {
   }
 }
 
+async function alternarEstadoActividad(actividadId) {
+  try {
+    const response = await fetch(`https://dwi-fastapi.onrender.com/actividades/${actividadId}/alternar_estado`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Error al alternar el estado');
+    }
+
+    const actividadActualizada = await response.json();
+    return actividadActualizada;
+  } catch (error) {
+    console.error('Error:', error.message);
+    throw error;
+  }
+}
+
 function getTaskColor(task) {
   const now = new Date();
   const fin = new Date(task.Fin);
@@ -130,11 +152,34 @@ taskList.addEventListener('click', async (e) => {
   if (!task) return;
 
   if (btn.classList.contains('complete-btn')) {
-    const nuevoEstatus = !task.Estatus;
-    div.classList.toggle('completed', nuevoEstatus);
-    div.querySelector('.task-header').classList.toggle('completed', nuevoEstatus);
-    await updateTask(_id, { Estatus: nuevoEstatus });
-    await fetchTasks();
+    // Prevenir múltiples clicks
+    btn.disabled = true;
+    
+    try {
+      // Usar la nueva función para alternar el estado
+      const actividadActualizada = await alternarEstadoActividad(_id);
+      
+      // Actualizar el estado local
+      task.Estatus = actividadActualizada.Estatus;
+      
+      // Actualizar visualmente
+      div.classList.toggle('completed', actividadActualizada.Estatus);
+      div.querySelector('.task-header').classList.toggle('completed', actividadActualizada.Estatus);
+      
+      // Actualizar el texto del botón
+      const buttonText = actividadActualizada.Estatus ? 'Marcar Pendiente' : 'Completar';
+      btn.textContent = buttonText;
+      
+      console.log('Estado alternado exitosamente:', actividadActualizada);
+      
+    } catch (error) {
+      // Si hay error, mostrar mensaje
+      alert('Error al alternar el estado: ' + error.message);
+      console.error('Error al alternar estado:', error);
+    } finally {
+      // Rehabilitar el botón
+      btn.disabled = false;
+    }
   } else if (btn.classList.contains('edit-btn')) {
     openEditModal(task);
   } else if (btn.classList.contains('delete-btn')) {
