@@ -9,6 +9,7 @@ const statusFilter = document.getElementById('statusFilter');
 const nameFilter = document.getElementById('nameFilter');
 const categoryFilter = document.getElementById('categoryFilter');
 const dateOrder = document.getElementById('dateOrder');
+const deadlineOrder = document.getElementById('deadlineOrder');
 const applyFilters = document.getElementById('applyFilters');
 const clearFilters = document.getElementById('clearFilters');
 
@@ -75,16 +76,21 @@ async function alternarEstadoActividad(actividadId) {
 }
 
 function getTaskColor(task) {
+  if (!task.Fin) {
+    return 'task-green'; // Sin fecha de fin, considerar como no urgente
+  }
+  
   const now = new Date();
   const fin = new Date(task.Fin);
   const diffMs = fin - now;
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  
   if (diffDays < 0) {
     return 'task-red'; // Vencida
   } else if (diffDays <= 7) {
     return 'task-yellow'; // Menos de una semana
   } else {
-    return 'task-green'; // Próximas
+    return 'task-green'; // Más de 7 días
   }
 }
 
@@ -94,6 +100,7 @@ function renderTasks() {
   const name = (nameFilter?.value || '').trim().toLowerCase();
   const category = (categoryFilter?.value || '').trim().toLowerCase();
   const order = (dateOrder?.value || 'desc');
+  const deadlineOrderValue = (deadlineOrder?.value || 'asc');
 
   let filtered = tasks.filter(t => {
     const statusMatch = status === 'all' ||
@@ -104,11 +111,32 @@ function renderTasks() {
     return statusMatch && nameMatch && categoryMatch;
   });
 
-  filtered = filtered.sort((a, b) => {
-    const dateA = new Date(a.Fecha);
-    const dateB = new Date(b.Fecha);
-    return order === 'asc' ? dateA - dateB : dateB - dateA;
-  });
+  // Función para calcular días restantes hasta la fecha de fin
+  function getDaysRemaining(task) {
+    if (!task.Fin) return Infinity; // Si no hay fecha de fin, se considera como muy lejana
+    const now = new Date();
+    const fin = new Date(task.Fin);
+    const diffMs = fin - now;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
+
+  // Ordenar por días restantes hasta la fecha de fin (prioridad) o por fecha de creación
+  if (deadlineOrderValue && deadlineOrderValue !== 'none') {
+    // Ordenar por días restantes hasta la fecha de fin
+    filtered = filtered.sort((a, b) => {
+      const daysA = getDaysRemaining(a);
+      const daysB = getDaysRemaining(b);
+      return deadlineOrderValue === 'asc' ? daysA - daysB : daysB - daysA;
+    });
+  } else {
+    // Ordenar por fecha de creación (comportamiento original)
+    filtered = filtered.sort((a, b) => {
+      const dateA = new Date(a.Fecha);
+      const dateB = new Date(b.Fecha);
+      return order === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }
 
   if (filtered.length === 0) {
     taskList.innerHTML = '<p>No hay tareas que coincidan con los filtros.</p>';
@@ -134,6 +162,7 @@ function renderTasks() {
       <div class="task-dates">
         <small><strong>Creada:</strong> ${task.Fecha ? new Date(task.Fecha).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</small><br/>
         <small><strong>Fin:</strong> ${task.Fin ? new Date(task.Fin).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</small>
+        ${task.Fin ? `<br/><small><strong>Días restantes:</strong> ${getDaysRemaining(task)} días</small>` : ''}
       </div>
       <div class="task-priority">
         <small><strong>Prioridad:</strong> ${task.Prioridad}</small>
@@ -211,7 +240,7 @@ form.addEventListener('submit', async (e) => {
 
 applyFilters.addEventListener('click', renderTasks);
 
-[nameFilter, categoryFilter, statusFilter, dateOrder].forEach(el => {
+[nameFilter, categoryFilter, statusFilter, dateOrder, deadlineOrder].forEach(el => {
   if (el) {
     el.addEventListener('change', renderTasks);
     el.addEventListener('input', renderTasks);
@@ -223,6 +252,7 @@ clearFilters.addEventListener('click', () => {
   nameFilter.value = '';
   categoryFilter.value = '';
   dateOrder.value = 'desc';
+  deadlineOrder.value = 'asc';
   renderTasks();
 });
 
@@ -259,12 +289,7 @@ editForm.onsubmit = async (e) => {
   }
 };
 
-window.onclick = function(event) {
-  if (event.target === editModal) {
-    editModal.style.display = 'none';
-  }
-};
-
+// Solo cerrar con Escape, no con click en el fondo
 document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape' && editModal.style.display === 'flex') {
     editModal.style.display = 'none';
