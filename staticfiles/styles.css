@@ -69,7 +69,7 @@ body {
   backdrop-filter: blur(10px);
   margin: 10px;
   border-radius: 8px;
-  max-height: calc(100vh - 20px);
+  max-height: calc(100vh - 48px);
   align-self: stretch;
 }
 

@@ -1,0 +1,22 @@
+services:
+  fastapi:
+    build:
+      context: .
+
+    ports:
+      - "8800:8800"
+
+    command: uvicorn mongoapi:app --host 0.0.0.0 --port 8800 --reload
+
+  django:
+    build:
+      context: .
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./Frontend:/app/Frontend
+
+    command: python manage.py runserver 0.0.0.0:8000
+

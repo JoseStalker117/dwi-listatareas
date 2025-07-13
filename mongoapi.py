@@ -36,10 +36,10 @@ class ActividadBase(BaseModel):
     Nombre: str
     Categoria: str
     Descripcion: str
-    Prioridad: str
+    Prioridad: int
     # Fecha: datetime
     Fin: datetime # El usuario define la fecha de finalización
-    Estatus: bool = False
+    Estatus: str
 
 # --- Modelo de Creación ---
 class ActividadCreate(ActividadBase):
