@@ -17,14 +17,14 @@ let tasks = [];
 let editingId = null;
 
 async function fetchTasks() {
-  const res = await fetch('http://localhost:8800/actividades');
+  const res = await fetch('https://dwi-fastapi.onrender.com/actividades');
   let data = await res.json();
   tasks = data; // Usar los datos tal cual
   renderTasks();
 }
 
 async function createTask(task) {
-  const res = await fetch('http://localhost:8800/actividades', {
+  const res = await fetch('https://dwi-fastapi.onrender.com/actividades', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -35,7 +35,7 @@ async function createTask(task) {
 }
 
 async function updateTask(_id, task) {
-  const res = await fetch(`http://localhost:8800/actividades/${_id}`, {
+  const res = await fetch(`https://dwi-fastapi.onrender.com/actividades/${_id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task)
@@ -46,7 +46,7 @@ async function updateTask(_id, task) {
 }
 
 async function deleteTask(_id) {
-  const res = await fetch(`http://localhost:8800/actividades/${_id}`, {
+  const res = await fetch(`https://dwi-fastapi.onrender.com/actividades/${_id}`, {
     method: 'DELETE'
   });
   if (res.ok) {
@@ -56,7 +56,7 @@ async function deleteTask(_id) {
 
 async function alternarEstadoActividad(actividadId) {
   try {
-    const response = await fetch(`http://localhost:8800/actividades/${actividadId}/alternar_estado`, {
+    const response = await fetch(`https://dwi-fastapi.onrender.com/actividades/${actividadId}/alternar_estado`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
