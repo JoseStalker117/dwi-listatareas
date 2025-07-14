@@ -1,11 +1,9 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  <link rel="stylesheet" href="styles.css">
   <title>Administrador de Tareas con Categorías</title>
 </head>
 <body>
@@ -15,30 +13,53 @@
       <div class="form-container">
         <h2>Nueva Tarea</h2>
         <form id="taskForm">
-          <div class="form-group">
-            <label for="taskInput">Nombre de la tarea</label>
-            <input type="text" id="taskInput" placeholder="Nueva tarea..." required />
-          </div>
+          
           <div class="form-group">
             <label for="categoryInput">Categoría</label>
             <input type="text" id="categoryInput" placeholder="Categoría..." />
+          </div>
+          <div class="form-group">
+            <label for="taskInput">Nombre de la tarea</label>
+            <input type="text" id="taskInput" placeholder="Nueva tarea..." required />
           </div>
           <div class="form-group">
             <label for="descriptionInput">Descripción</label>
             <textarea id="descriptionInput" placeholder="Descripción detallada..."></textarea>
           </div>
           <div class="form-group">
-            <label for="priorityInput">Prioridad</label>
-            <select id="priorityInput" required>
-              <option value="Baja">Baja</option>
-              <option value="Media">Media</option>
-              <option value="Alta">Alta</option>
-              <option value="Urgente">Urgente</option>
-            </select>
+            <label for="priorityInput">Prioridad (mínimo 0, opcional)</label>
+            <input type="number" id="priorityInput" min="0" />
           </div>
           <div class="form-group">
             <label for="finInput">Fecha y hora de finalización</label>
             <input type="datetime-local" id="finInput" required value="" />
+          </div>
+          <div class="form-group">
+            <label for="estatusInput">Estatus</label>
+            <select id="estatusInput" required>
+              <option value="En proceso">En proceso</option>
+              <option value="Enviado al cliente">Enviado al cliente</option>
+              <option value="En revision">En revisión</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contactos (correo)</label>
+            <div id="contactosContainer">
+              <!-- Aquí se agregan los campos de correo -->
+            </div>
+            <button type="button" id="addContactoBtn">+ Agregar contacto</button>
+            <div id="contactoSubform" style="display:none; margin-top:10px;">
+              <select id="contactoClave">
+                <option value="to">(To)</option>
+                <option value="cc">(Cc)</option>
+                <option value="bcc">(Bcc)</option>
+              </select>
+              <input type="email" id="contactoEmail" placeholder="correo@dominio.com" required />
+              <button type="button" id="guardarContactoBtn">✅</button>
+              <button type="button" id="cancelarContactoBtn">⛔</button>
+            </div>
           </div>
           <button type="submit">Agregar Tarea</button>
         </form>
@@ -56,8 +77,11 @@
         <input type="text" id="nameFilter" placeholder="Filtrar por nombre..." />
         <select id="statusFilter">
           <option value="all">Todas</option>
-          <option value="pending">Pendientes</option>
-          <option value="completed">Completadas</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Enviado al cliente">Enviado al cliente</option>
+          <option value="En revision">En revisión</option>
+          <option value="Finalizado">Finalizado</option>
+          <option value="Cerrado">Cerrado</option>
         </select>
         <select id="dateOrder">
           <option value="desc">Creado recientemente</option>
@@ -82,21 +106,56 @@
       <h3>Editar Actividad</h3>
       <form id="editForm">
         <input type="hidden" id="editId" />
-        <label>Nombre</label>
-        <input type="text" id="editNombre" required />
-        <label>Categoría</label>
-        <input type="text" id="editCategoria" />
-        <label>Descripción</label>
-        <textarea id="editDescripcion"></textarea>
-        <label>Prioridad</label>
-        <select id="editPrioridad" required>
-          <option value="Baja">Baja</option>
-          <option value="Media">Media</option>
-          <option value="Alta">Alta</option>
-          <option value="Urgente">Urgente</option>
-        </select>
-        <label>Fin</label>
-        <input type="datetime-local" id="editFin" required />
+        <!-- Fila 1: Categoría y Nombre -->
+        <div class="form-row">
+          <div class="form-group stretch">
+            <label for="editCategoria">Categoría</label>
+            <input type="text" id="editCategoria" />
+          </div>
+          <div class="form-group stretch">
+            <label for="editNombre">Nombre</label>
+            <input type="text" id="editNombre" required />
+          </div>
+        </div>
+        <!-- Fila 2: Descripción -->
+        <div class="form-row">
+          <div class="form-group stretch" style="flex:1 1 100%;max-width:100%;">
+            <label for="editDescripcion">Descripción</label>
+            <textarea id="editDescripcion"></textarea>
+          </div>
+        </div>
+        <!-- Fila 3: Prioridad y Estatus -->
+        <div class="form-row">
+          <div class="form-group stretch">
+            <label for="editPrioridad">Prioridad (mínimo 0, opcional)</label>
+            <input type="number" id="editPrioridad" min="0" />
+          </div>
+          <div class="form-group stretch">
+            <label for="editEstatus">Estatus</label>
+            <select id="editEstatus" required>
+              <option value="En proceso">En proceso</option>
+              <option value="Enviado al cliente">Enviado al cliente</option>
+              <option value="En revision">En revisión</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+          </div>
+        </div>
+        <!-- Fila 4: Fin -->
+        <div class="form-row">
+          <div class="form-group stretch" style="flex:1 1 100%;max-width:100%;">
+            <label for="editFin">Fin</label>
+            <input type="datetime-local" id="editFin" required />
+          </div>
+        </div>
+        <!-- Fila 5: Contactos -->
+        <div class="form-row">
+          <div class="form-group stretch" style="flex:1 1 100%;max-width:100%;">
+            <label>Contactos</label>
+            <button type="button" id="addEditContactoBtn">+ Agregar contacto</button>
+            <div id="editContactosContainer"></div>
+          </div>
+        </div>
         <div class="modal-actions">
           <button type="button" id="closeEditModal">Cancelar</button>
           <button type="submit">Guardar</button>
@@ -104,6 +163,6 @@
       </form>
     </div>
   </div>
-  <script src="{% static 'scripts.js' %}"></script>
+  <script src="scripts.js"></script>
 </body>
 </html>
