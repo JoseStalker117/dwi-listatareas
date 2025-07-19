@@ -7,6 +7,8 @@ const dateOrder = document.getElementById('dateOrder');
 const deadlineOrder = document.getElementById('deadlineOrder');
 const applyFilters = document.getElementById('applyFilters');
 const clearFilters = document.getElementById('clearFilters');
+const priorityFilter = document.getElementById('priorityFilter');
+const hideCompleted = document.getElementById('hideCompleted');
 
 // Mapeo de colores por estatus
 const STATUS_COLORS = {
@@ -55,8 +57,9 @@ function renderTasks() {
   const status = statusFilter.value;
   const name = (nameFilter?.value || '').trim().toLowerCase();
   const category = (categoryFilter?.value || '').trim().toLowerCase();
-  const order = (dateOrder?.value || 'desc');
-  const deadlineOrderValue = (deadlineOrder?.value || 'asc');
+  const priority = priorityFilter && priorityFilter.value !== '' ? parseInt(priorityFilter.value, 10) : null;
+  const order = (dateOrder?.value || 'priority_asc');
+  const hideCompletedChecked = hideCompleted ? hideCompleted.checked : true;
 
   // Verificar que tasks sea un array válido
   if (!Array.isArray(tasks)) {
@@ -74,21 +77,25 @@ function renderTasks() {
     const statusMatch = status === 'all' || (t.Estatus && t.Estatus === status);
     const nameMatch = !name || t.Nombre.toLowerCase().includes(name);
     const categoryMatch = !category || t.Categoria.toLowerCase().includes(category);
-    return statusMatch && nameMatch && categoryMatch;
+    const priorityMatch = priority === null || t.Prioridad === priority;
+    const completed = t.Estatus && (t.Estatus.toLowerCase() === 'finalizado' || t.Estatus.toLowerCase() === 'cerrado');
+    const completedMatch = !hideCompletedChecked || !completed;
+    return statusMatch && nameMatch && categoryMatch && priorityMatch && completedMatch;
   });
 
-  if (deadlineOrderValue && deadlineOrderValue !== 'none') {
-    filtered = filtered.sort((a, b) => {
-      const daysA = getDaysRemaining(a);
-      const daysB = getDaysRemaining(b);
-      return deadlineOrderValue === 'asc' ? daysA - daysB : daysB - daysA;
-    });
-  } else {
-    filtered = filtered.sort((a, b) => {
-      const dateA = new Date(a.Fecha);
-      const dateB = new Date(b.Fecha);
-      return order === 'asc' ? dateA - dateB : dateB - dateA;
-    });
+  // Ordenamiento
+  if (order === 'priority_desc') {
+    filtered = filtered.sort((a, b) => (b.Prioridad ?? -Infinity) - (a.Prioridad ?? -Infinity));
+  } else if (order === 'priority_asc') {
+    filtered = filtered.sort((a, b) => (a.Prioridad ?? Infinity) - (b.Prioridad ?? Infinity));
+  } else if (order === 'created_desc') {
+    filtered = filtered.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
+  } else if (order === 'created_asc') {
+    filtered = filtered.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha));
+  } else if (order === 'fin_asc') {
+    filtered = filtered.sort((a, b) => new Date(a.Fin) - new Date(b.Fin));
+  } else if (order === 'fin_desc') {
+    filtered = filtered.sort((a, b) => new Date(b.Fin) - new Date(a.Fin));
   }
 
   if (filtered.length === 0) {
@@ -209,7 +216,23 @@ clearFilters.addEventListener('click', () => {
   statusFilter.value = 'all';
   nameFilter.value = '';
   categoryFilter.value = '';
-  dateOrder.value = 'desc';
+  dateOrder.value = 'priority_asc'; // Resetear a prioridad ascendente por defecto
   deadlineOrder.value = 'asc';
+  priorityFilter.value = ''; // Limpiar prioridad
+  hideCompleted.checked = true; // Mostrar completados por defecto
+  renderTasks();
+});
+
+// Añadir listeners para los nuevos filtros
+[priorityFilter, hideCompleted].forEach(el => {
+  if (el) {
+    el.addEventListener('change', renderTasks);
+    el.addEventListener('input', renderTasks);
+  }
+});
+// Por defecto: prioridad descendente y ocultar completados
+window.addEventListener('DOMContentLoaded', () => {
+  if (dateOrder) dateOrder.value = 'priority_asc';
+  if (hideCompleted) hideCompleted.checked = true;
   renderTasks();
 });

@@ -138,14 +138,25 @@
             <option value="Finalizado">Finalizado</option>
             <option value="Cerrado">Cerrado</option>
           </select>
+          <!-- <input
+            type="number"
+            id="priorityFilter"
+            placeholder="Prioridad..."
+            min="0"
+            style="min-width: 90px;"
+          /> -->
           <select id="dateOrder">
-            <option value="desc">Creado recientemente</option>
-            <option value="asc">Tareas muy antiguas</option>
+            <option value="none">Ordenar por...</option>
+            <option value="created_desc">Creación (reciente primero)</option>
+            <option value="created_asc">Creación (antiguo primero)</option>
+            <option value="fin_asc">Fin (vence pronto)</option>
+            <option value="fin_desc">Fin (vence más tarde)</option>
+            <option value="priority_desc">Prioridad (baja primero)</option>
+            <option value="priority_asc">Prioridad (alta primero)</option>
           </select>
-          <select id="deadlineOrder">
-            <option value="asc">Vence pronto</option>
-            <option value="desc">Vence más tarde</option>
-          </select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;">
+            <input type="checkbox" id="hideCompleted" checked style="margin:0;" /> Ocultar completados
+          </label>
           <button id="applyFilters">Filtrar</button>
           <button id="clearFilters">Limpiar Filtros</button>
         </div>
