@@ -26,11 +26,13 @@ body::before {
 .grid-container {
   display: grid;
   grid-template-columns: minmax(350px, auto) 1fr;
-  min-height: 100vh;
+  min-height: 80vh;
   gap: 20px;
   padding: 10px;
   max-width: 100vw;
   align-items: start;
+  padding-bottom: 48px;
+  margin-bottom: 24px;
 }
 
 /* Elementos comunes de formulario */
@@ -78,5 +80,8 @@ textarea {
     grid-template-rows: auto 1fr;
     gap: 10px;
     padding: 5px;
+    margin-bottom: 24px;
   }
 }
+
+/* Hotfixes globales aquí si se requieren */

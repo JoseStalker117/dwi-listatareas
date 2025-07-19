@@ -352,6 +352,42 @@
   margin-right: 0;
 }
 
+.actions-section .btn.btn-complete,
+.actions-section button.btn-complete {
+  background: #059669 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.actions-section .btn.btn-edit,
+.actions-section button.btn-edit {
+  background: #d97706 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.actions-section .btn.btn-delete,
+.actions-section button.btn-delete {
+  background: #dc2626 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.actions-section .btn-mailto,
+.actions-section a.btn-mailto {
+  background: #007bff !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border: none !important;
+  text-decoration: none !important;
+}
+.actions-section .btn-mailto:hover,
+.actions-section a.btn-mailto:hover {
+  background: #0056b3 !important;
+  color: #fff !important;
+  text-decoration: underline !important;
+}
+
 /* Estados especiales de tarjeta */
 .cerrado-text, 
 .activity-card.cerrado .main-content, 

@@ -182,7 +182,7 @@ taskListContainer.addEventListener('click', async (e) => {
       btn.textContent = actividadActualizada.Estatus && actividadActualizada.Estatus.toLowerCase() === 'cerrado' ? '🔓 Reabrir' : '✅ Completar';
       await fetchTasks();
     } catch (error) {
-      alert('Error al alternar el estado: ' + error.message);
+      // alert('Error al alternar el estado: ' + error.message); // Removido el alertbox
     } finally {
       btn.disabled = false;
     }
