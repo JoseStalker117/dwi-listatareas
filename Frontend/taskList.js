@@ -47,7 +47,7 @@ function buildMailto(task) {
   let params = [];
   if (cc.length) params.push(`cc=${encodeURIComponent(cc.join(','))}`);
   if (bcc.length) params.push(`bcc=${encodeURIComponent(bcc.join(','))}`);
-  params.push(`subject=${encodeURIComponent(task.Nombre || 'Actividad')}`);
+  params.push(`subject=${encodeURIComponent(task.Categoria || 'Categoria')} | ${encodeURIComponent(task.Nombre || 'Actividad')}`);
   if (params.length) mailtoLink += `?${params.join('&')}`;
   return mailtoLink;
 }
