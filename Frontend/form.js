@@ -147,10 +147,10 @@ taskForm.addEventListener("submit", async (e) => {
       contactos = [];
       renderContactos();
       
-      // Recargar tareas
-      if (typeof window.fetchTasks === 'function') {
-        await window.fetchTasks();
-      }
+      // No es necesario recargar tareas aquí porque createTask ya lo hace
+      // if (typeof window.fetchTasks === 'function') {
+      //   await window.fetchTasks();
+      // }
       
       console.log('✅ Tarea creada exitosamente');
     } else {

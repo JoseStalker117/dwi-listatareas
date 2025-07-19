@@ -10,6 +10,47 @@ const clearFilters = document.getElementById('clearFilters');
 const priorityFilter = document.getElementById('priorityFilter');
 const hideCompleted = document.getElementById('hideCompleted');
 
+// Función de notificación local
+function showNotification(message, type = "info") {
+  // Usar la función global si está disponible
+  if (window.showNotification) {
+    window.showNotification(message, type);
+    return;
+  }
+  
+  // Función local de notificación
+  const notification = document.createElement("div");
+  notification.className = `alert alert-${
+    type === "error" ? "danger" : type
+  } alert-dismissible fade show position-fixed`;
+  notification.style.top = "80px";
+  notification.style.right = "20px";
+  notification.style.zIndex = "9999";
+  notification.style.minWidth = "300px";
+
+  notification.innerHTML = `
+    <i class="fas fa-${
+      type === "success"
+        ? "check-circle"
+        : type === "error"
+        ? "exclamation-triangle"
+        : "info-circle"
+    } me-2"></i>
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto-remover después de 5 segundos
+  setTimeout(() => {
+    if (notification.parentNode) {
+      const alert = new bootstrap.Alert(notification);
+      alert.close();
+    }
+  }, 5000);
+}
+
 // Mapeo de colores por estatus
 const STATUS_COLORS = {
   'En proceso':   { border: '#ffc107', badge: '#fffbe6', text: '#856404', bg: 'rgba(255, 193, 7, 0.08)', alt: '#795548' },
@@ -203,7 +244,59 @@ taskListContainer.addEventListener('click', async (e) => {
 });
 
 // Event listeners para filtros
-applyFilters.addEventListener('click', renderTasks);
+applyFilters.addEventListener('click', async () => {
+  // Confirmar la acción antes de proceder
+  const confirmacion = confirm('¿Estás seguro de que quieres reordenar las prioridades de todas las actividades? Esta acción no se puede deshacer.');
+  
+  if (!confirmacion) {
+    return; // Cancelar si el usuario no confirma
+  }
+  
+  // Mostrar indicador de carga en el botón
+  const originalText = applyFilters.textContent;
+  applyFilters.disabled = true;
+  applyFilters.textContent = '🔄 Reordenando...';
+  
+  try {
+    // Obtener el usuario actual
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userId = currentUser.user_id;
+    
+    if (!userId) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    // Llamar al endpoint de reordenamiento
+    const res = await window.authUtils.authenticatedFetch(
+      `${window.getApiBaseUrl()}/actividades/reordenar_prioridad`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId
+        }),
+      }
+    );
+    
+    if (res && res.ok) {
+      // Recargar las tareas después del reordenamiento
+      await window.fetchTasks();
+      showNotification('Prioridades reordenadas exitosamente', 'success');
+    } else {
+      const error = await res.json();
+      throw new Error(error.detail || 'Error al reordenar prioridades');
+    }
+  } catch (error) {
+    console.error('Error al reordenar prioridades:', error);
+    showNotification('Error al reordenar prioridades: ' + error.message, 'error');
+  } finally {
+    // Restaurar el botón
+    applyFilters.disabled = false;
+    applyFilters.textContent = originalText;
+  }
+});
 
 [nameFilter, categoryFilter, statusFilter, dateOrder, deadlineOrder].forEach(el => {
   if (el) {
