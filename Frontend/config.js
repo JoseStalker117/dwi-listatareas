@@ -1,6 +1,7 @@
 // Configuración centralizada de la aplicación
 window.APP_CONFIG = {
-    API_BASE_URL: 'http://localhost:8800',
+    API_BASE_URL: 'https://dwi-fastapi.onrender.com',
+    // API_BASE_URL: 'http://localhost:8800',
     FRONTEND_BASE_URL: 'http://localhost:8000',
     
     // Configuración de desarrollo

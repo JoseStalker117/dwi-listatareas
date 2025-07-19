@@ -1,7 +1,8 @@
 // Configuración de la API (se carga desde config.js)
 const API_BASE_URL = window.APP_CONFIG
   ? window.APP_CONFIG.API_BASE_URL
-  : "http://localhost:8800";
+  : "https://dwi-fastapi.onrender.com";
+//   : "http://localhost:8800";
 
 // Utilidades para alertas
 function showAlert(message, type = "info", duration = 5000) {

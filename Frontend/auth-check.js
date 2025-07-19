@@ -1,6 +1,8 @@
 // Función para obtener la URL base de la API
 function getApiBaseUrl() {
-  return window.APP_CONFIG ? window.APP_CONFIG.API_BASE_URL : 'http://localhost:8800';
+//   return window.APP_CONFIG ? window.APP_CONFIG.API_BASE_URL : 'http://localhost:8800';
+  return window.APP_CONFIG ? window.APP_CONFIG.API_BASE_URL : 'https://dwi-fastapi.onrender.com';
+  
 }
 
 // Variables globales de autenticación
