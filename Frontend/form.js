@@ -140,19 +140,21 @@ taskForm.addEventListener("submit", async (e) => {
     // Verificar que createTask esté disponible
     if (typeof window.createTask === 'function') {
       console.log('✅ createTask está disponible, enviando...');
-      await window.createTask(taskData);
+      const success = await window.createTask(taskData);
       
-      // Limpiar formulario solo si fue exitoso
-      taskForm.reset();
-      contactos = [];
-      renderContactos();
-      
-      // No es necesario recargar tareas aquí porque createTask ya lo hace
-      // if (typeof window.fetchTasks === 'function') {
-      //   await window.fetchTasks();
-      // }
-      
-      console.log('✅ Tarea creada exitosamente');
+      if (success) {
+        // Limpiar formulario solo si fue exitoso
+        taskForm.reset();
+        contactos = [];
+        renderContactos();
+        
+        // Recargar tareas solo si la creación fue exitosa
+        if (typeof window.fetchTasks === 'function') {
+          await window.fetchTasks();
+        }
+        
+        console.log('✅ Tarea creada exitosamente');
+      }
     } else {
       console.error('❌ createTask no está definida');
       console.log('Funciones disponibles en window:', Object.keys(window).filter(key => key.includes('Task')));

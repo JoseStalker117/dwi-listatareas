@@ -48,15 +48,19 @@ async function createTask(task) {
       }
     );
     if (res && res.ok) {
-      await fetchTasks();
+      // No llamar a fetchTasks aquí para evitar recursión
+      // await fetchTasks();
       showNotification("Actividad creada exitosamente", "success");
+      return true; // Indicar éxito
     } else {
       const error = await res.json();
       showNotification("Error al crear actividad: " + error.detail, "error");
+      return false; // Indicar error
     }
   } catch (error) {
     console.error("Error creating task:", error);
     showNotification("Error al crear la actividad", "error");
+    return false; // Indicar error
   }
 }
 
