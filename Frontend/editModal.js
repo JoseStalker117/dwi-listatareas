@@ -8,6 +8,19 @@ const editContactosContainer = document.getElementById('editContactosContainer')
 const addEditContactoBtn = document.getElementById('addEditContactoBtn');
 let editContactos = [];
 
+// Función local para agrupar contactos (evitar dependencias entre archivos)
+function groupContacts(list) {
+  const grouped = { to: [], cc: [], bcc: [] };
+  if (Array.isArray(list)) {
+    list.forEach((c) => {
+      if (c.to) grouped.to.push(c.to);
+      if (c.cc) grouped.cc.push(c.cc);
+      if (c.bcc) grouped.bcc.push(c.bcc);
+    });
+  }
+  return grouped;
+}
+
 // Subformulario para agregar contacto en el modal de edición
 let editContactoSubform = null;
 let editContactoClave = null;
@@ -126,8 +139,18 @@ editForm.onsubmit = async (e) => {
   const Estatus = document.getElementById('editEstatus').value;
   
   if (Nombre) {
-    await updateTask(_id, { Nombre, Categoria, Descripcion, Prioridad, Fin, Estatus, mailto: editContactos });
-    editModalElement.style.display = 'none';
+    try {
+      if (typeof window.updateTask === 'function') {
+        await window.updateTask(_id, { Nombre, Categoria, Descripcion, Prioridad, Fin, Estatus, mailto: editContactos });
+        editModalElement.style.display = 'none';
+      } else {
+        console.error('❌ updateTask no está disponible');
+        window.showNotification('Error: Función de actualización no disponible', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error al actualizar tarea:', error);
+      window.showNotification('Error al actualizar la tarea: ' + error.message, 'error');
+    }
   }
 };
 
@@ -137,3 +160,6 @@ document.addEventListener('keydown', function(event) {
     editModalElement.style.display = 'none';
   }
 });
+
+// Exportar funciones globalmente
+window.openEditModal = openEditModal;

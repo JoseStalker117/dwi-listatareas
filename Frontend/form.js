@@ -136,6 +136,12 @@ taskForm.addEventListener("submit", async (e) => {
   
   console.log('📋 Datos de la tarea:', taskData);
   
+  // Deshabilitar el botón de envío para evitar múltiples envíos
+  const submitBtn = taskForm.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = '🔄 Creando...';
+  
   try {
     // Verificar que createTask esté disponible
     if (typeof window.createTask === 'function') {
@@ -150,6 +156,7 @@ taskForm.addEventListener("submit", async (e) => {
         
         // Recargar tareas solo si la creación fue exitosa
         if (typeof window.fetchTasks === 'function') {
+          console.log('🔄 Recargando tareas después de crear...');
           await window.fetchTasks();
         }
         
@@ -163,6 +170,10 @@ taskForm.addEventListener("submit", async (e) => {
   } catch (error) {
     console.error('❌ Error al crear tarea:', error);
     alert('Error al crear la tarea: ' + error.message);
+  } finally {
+    // Restaurar el botón
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
   }
 });
 

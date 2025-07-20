@@ -1,5 +1,6 @@
 // === VARIABLES GLOBALES ===
 let tasks = [];
+let isFetchingTasks = false; // Bandera para evitar múltiples llamadas simultáneas
 
 // Función para obtener la URL base de la API
 function getApiBaseUrl() {
@@ -9,6 +10,14 @@ function getApiBaseUrl() {
 
 // === FUNCIONES PRINCIPALES DE API ===
 async function fetchTasks() {
+  // Evitar múltiples llamadas simultáneas
+  if (isFetchingTasks) {
+    console.log('⚠️ fetchTasks ya está ejecutándose, saltando...');
+    return;
+  }
+  
+  isFetchingTasks = true;
+  
   try {
     const res = await window.authUtils.authenticatedFetch(
       `${getApiBaseUrl()}/actividades/`
@@ -35,6 +44,8 @@ async function fetchTasks() {
     if (typeof renderTasks === "function") {
       renderTasks();
     }
+  } finally {
+    isFetchingTasks = false;
   }
 }
 
