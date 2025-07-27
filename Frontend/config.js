@@ -10,13 +10,17 @@ window.APP_CONFIG = {
     // Configuración de autenticación
     TOKEN_EXPIRY_MINUTES: 30,
     
+    // Configuración de heartbeat
+    HEARTBEAT_INTERVAL_MS: 5 * 60 * 1000, // 5 minutos en milisegundos
+    
     // Endpoints de la API
     ENDPOINTS: {
         LOGIN: '/sesion/login',
         VERIFY_TOKEN: '/sesion/verify-token',
         USERS: '/usuarios/',
         ACTIVITIES: '/actividades/',
-        TOGGLE_STATUS: '/alternar_estado'
+        TOGGLE_STATUS: '/alternar_estado',
+        HEALTH: '/' // Endpoint para heartbeat
     }
 };
 
@@ -34,3 +38,28 @@ window.buildApiUrl = function(endpoint) {
 };
 
 console.log('Configuración cargada:', window.APP_CONFIG);
+
+// Función simple de heartbeat - solo GET a la API base cada 5 minutos
+window.startHeartbeat = function() {
+    if (window.heartbeatInterval) {
+        return; // Ya está activo
+    }
+    
+    const performHeartbeat = () => {
+        fetch(window.APP_CONFIG.API_BASE_URL);
+    };
+    
+    // Ejecutar inmediatamente
+    performHeartbeat();
+    
+    // Configurar intervalo de 5 minutos
+    window.heartbeatInterval = setInterval(performHeartbeat, 5 * 60 * 1000);
+};
+
+// Función para detener el heartbeat
+window.stopHeartbeat = function() {
+    if (window.heartbeatInterval) {
+        clearInterval(window.heartbeatInterval);
+        window.heartbeatInterval = null;
+    }
+};

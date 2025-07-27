@@ -21,8 +21,8 @@ function getTasks() {
   }
   // Fallback a variable local si existe
   return tasks || [];
-}
-
+  }
+  
 // Función local para agrupar contactos (evitar dependencias entre archivos)
 function groupContacts(list) {
   const grouped = { to: [], cc: [], bcc: [] };
@@ -88,126 +88,126 @@ function renderTasks() {
   isRendering = true;
   
   try {
-    taskListContainer.innerHTML = '';
-    const status = statusFilter.value;
-    const name = (nameFilter?.value || '').trim().toLowerCase();
-    const category = (categoryFilter?.value || '').trim().toLowerCase();
-    const priority = priorityFilter && priorityFilter.value !== '' ? parseInt(priorityFilter.value, 10) : null;
-    const order = (dateOrder?.value || 'priority_asc');
-    const hideCompletedChecked = hideCompleted ? hideCompleted.checked : true;
+  taskListContainer.innerHTML = '';
+  const status = statusFilter.value;
+  const name = (nameFilter?.value || '').trim().toLowerCase();
+  const category = (categoryFilter?.value || '').trim().toLowerCase();
+  const priority = priorityFilter && priorityFilter.value !== '' ? parseInt(priorityFilter.value, 10) : null;
+  const order = (dateOrder?.value || 'priority_asc');
+  const hideCompletedChecked = hideCompleted ? hideCompleted.checked : true;
 
     // Obtener tareas de forma segura
     const currentTasks = getTasks();
 
-    // Verificar que tasks sea un array válido
+  // Verificar que tasks sea un array válido
     if (!Array.isArray(currentTasks)) {
       console.error('tasks no es un array:', currentTasks);
-      taskListContainer.innerHTML = `<div class="no-tasks-message"> <br>Error cargando actividades<br><span style='font-size:1.2em'>Verifica la conexión con la API 🔌</span></div>`;
-      return;
-    }
+    taskListContainer.innerHTML = `<div class="no-tasks-message"> <br>Error cargando actividades<br><span style='font-size:1.2em'>Verifica la conexión con la API 🔌</span></div>`;
+    return;
+  }
 
     if (currentTasks.length === 0) {
-      taskListContainer.innerHTML = `<div class="no-tasks-message"> <br>Vaya! No hay actividades<br><span style='font-size:1.2em'>¿Estamos de descanso? 😎☕</span></div>`;
-      return;
-    }
+    taskListContainer.innerHTML = `<div class="no-tasks-message"> <br>Vaya! No hay actividades<br><span style='font-size:1.2em'>¿Estamos de descanso? 😎☕</span></div>`;
+    return;
+  }
 
     let filtered = currentTasks.filter(t => {
-      const statusMatch = status === 'all' || (t.Estatus && t.Estatus === status);
-      const nameMatch = !name || t.Nombre.toLowerCase().includes(name);
-      const categoryMatch = !category || t.Categoria.toLowerCase().includes(category);
-      const priorityMatch = priority === null || t.Prioridad === priority;
-      const completed = t.Estatus && (t.Estatus.toLowerCase() === 'finalizado' || t.Estatus.toLowerCase() === 'cerrado');
-      const completedMatch = !hideCompletedChecked || !completed;
-      return statusMatch && nameMatch && categoryMatch && priorityMatch && completedMatch;
-    });
+    const statusMatch = status === 'all' || (t.Estatus && t.Estatus === status);
+    const nameMatch = !name || t.Nombre.toLowerCase().includes(name);
+    const categoryMatch = !category || t.Categoria.toLowerCase().includes(category);
+    const priorityMatch = priority === null || t.Prioridad === priority;
+    const completed = t.Estatus && (t.Estatus.toLowerCase() === 'finalizado' || t.Estatus.toLowerCase() === 'cerrado');
+    const completedMatch = !hideCompletedChecked || !completed;
+    return statusMatch && nameMatch && categoryMatch && priorityMatch && completedMatch;
+  });
 
-    // Ordenamiento
-    if (order === 'priority_desc') {
-      filtered = filtered.sort((a, b) => (b.Prioridad ?? -Infinity) - (a.Prioridad ?? -Infinity));
-    } else if (order === 'priority_asc') {
-      filtered = filtered.sort((a, b) => (a.Prioridad ?? Infinity) - (b.Prioridad ?? Infinity));
-    } else if (order === 'created_desc') {
-      filtered = filtered.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
-    } else if (order === 'created_asc') {
-      filtered = filtered.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha));
-    } else if (order === 'fin_asc') {
-      filtered = filtered.sort((a, b) => new Date(a.Fin) - new Date(b.Fin));
-    } else if (order === 'fin_desc') {
-      filtered = filtered.sort((a, b) => new Date(b.Fin) - new Date(a.Fin));
+  // Ordenamiento
+  if (order === 'priority_desc') {
+    filtered = filtered.sort((a, b) => (b.Prioridad ?? -Infinity) - (a.Prioridad ?? -Infinity));
+  } else if (order === 'priority_asc') {
+    filtered = filtered.sort((a, b) => (a.Prioridad ?? Infinity) - (b.Prioridad ?? Infinity));
+  } else if (order === 'created_desc') {
+    filtered = filtered.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
+  } else if (order === 'created_asc') {
+    filtered = filtered.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha));
+  } else if (order === 'fin_asc') {
+    filtered = filtered.sort((a, b) => new Date(a.Fin) - new Date(b.Fin));
+  } else if (order === 'fin_desc') {
+    filtered = filtered.sort((a, b) => new Date(b.Fin) - new Date(a.Fin));
+  }
+
+  if (filtered.length === 0) {
+    taskListContainer.innerHTML = `<div class="no-tasks-message">No hay tareas que coincidan con los filtros.</div>`;
+    return;
+  }
+
+  filtered.forEach((task) => {
+    const colors = getStatusColors(task.Estatus);
+    let priorityClass = '';
+    if (task.Estatus && task.Estatus.toLowerCase() === 'cerrado') priorityClass = 'cerrado';
+
+    const daysRemaining = getDaysRemaining(task);
+    let daysClass = '';
+    if (daysRemaining < 0) daysClass = 'urgent';
+    else if (daysRemaining <= 2) daysClass = 'urgent';
+    else if (daysRemaining <= 7) daysClass = 'warning';
+
+    let contactosHtml = '';
+    let mailtoBtnHtml = '';
+    if (Array.isArray(task.mailto) && task.mailto.length > 0) {
+      const grouped = groupContacts(task.mailto);
+      contactosHtml = ['to','cc','bcc'].map(tipo => {
+        if (!grouped[tipo].length) return '';
+        return `<div class="contact-group ${tipo}"><strong>${tipo === 'to' ? 'Para' : tipo.toUpperCase()}:</strong> ` +
+          grouped[tipo].map(email => `<span class='contact-tag'>${email}</span>`).join(' ') + '</div>';
+      }).join('');
+      mailtoBtnHtml = `<a class="btn btn-mailto" href="${buildMailto(task)}" target="_blank">✉️ Mailto</a>`;
     }
 
-    if (filtered.length === 0) {
-      taskListContainer.innerHTML = `<div class="no-tasks-message">No hay tareas que coincidan con los filtros.</div>`;
-      return;
-    }
-
-    filtered.forEach((task) => {
-      const colors = getStatusColors(task.Estatus);
-      let priorityClass = '';
-      if (task.Estatus && task.Estatus.toLowerCase() === 'cerrado') priorityClass = 'cerrado';
-
-      const daysRemaining = getDaysRemaining(task);
-      let daysClass = '';
-      if (daysRemaining < 0) daysClass = 'urgent';
-      else if (daysRemaining <= 2) daysClass = 'urgent';
-      else if (daysRemaining <= 7) daysClass = 'warning';
-
-      let contactosHtml = '';
-      let mailtoBtnHtml = '';
-      if (Array.isArray(task.mailto) && task.mailto.length > 0) {
-        const grouped = groupContacts(task.mailto);
-        contactosHtml = ['to','cc','bcc'].map(tipo => {
-          if (!grouped[tipo].length) return '';
-          return `<div class="contact-group ${tipo}"><strong>${tipo === 'to' ? 'Para' : tipo.toUpperCase()}:</strong> ` +
-            grouped[tipo].map(email => `<span class='contact-tag'>${email}</span>`).join(' ') + '</div>';
-        }).join('');
-        mailtoBtnHtml = `<a class="btn btn-mailto" href="${buildMailto(task)}" target="_blank">✉️ Mailto</a>`;
-      }
-
-      const card = document.createElement('div');
-      card.className = `activity-card ${priorityClass}`;
-      card.dataset._id = task._id;
-      card.style.borderLeft = `8px solid ${colors.border}`;
-      card.innerHTML = `
-        <div class="activity-card-bg" style="background:${colors.bg};"></div>
-        <div class="main-content${priorityClass === 'cerrado' ? ' cerrado-text' : ''}">
-          <div class="card-header-flex">
-            <div class="card-header-left">
-              <span class="category-badge" style="background:#fff;color:${colors.alt};border:1.5px solid ${colors.alt}">${task.Categoria || ''}</span>
-              <span class="activity-title">${task.Nombre}</span>
-            </div>
-            <div class="priority-indicator" style="background:transparent;">
-              <span class="priority-number" style="background:${colors.alt};color:#fff;">${task.Prioridad !== undefined && task.Prioridad !== null && task.Prioridad !== '' ? task.Prioridad : '-'}</span>
-            </div>
+    const card = document.createElement('div');
+    card.className = `activity-card ${priorityClass}`;
+    card.dataset._id = task._id;
+    card.style.borderLeft = `8px solid ${colors.border}`;
+    card.innerHTML = `
+      <div class="activity-card-bg" style="background:${colors.bg};"></div>
+      <div class="main-content${priorityClass === 'cerrado' ? ' cerrado-text' : ''}">
+        <div class="card-header-flex">
+          <div class="card-header-left">
+            <span class="category-badge" style="background:#fff;color:${colors.alt};border:1.5px solid ${colors.alt}">${task.Categoria || ''}</span>
+            <span class="activity-title">${task.Nombre}</span>
           </div>
-          <p class="activity-description">${task.Descripcion || ''}</p>
-          ${contactosHtml}
-        </div>
-        <div class="dates-section">
-          <div class="detail-item">
-            <span class="detail-label">Fecha de creación</span>
-            <span class="detail-value">${task.Fecha ? new Date(task.Fecha).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Fecha límite</span>
-            <span class="detail-value">${task.Fin ? new Date(task.Fin).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}
+          <div class="priority-indicator" style="background:transparent;">
+            <span class="priority-number" style="background:${colors.alt};color:#fff;">${task.Prioridad !== undefined && task.Prioridad !== null && task.Prioridad !== '' ? task.Prioridad : '-'}</span>
           </div>
         </div>
-        <div class="status-section">
-          <div class="days-remaining ${daysClass}">
-            ⏰ ${daysRemaining < 0 ? 'Vencida' : daysRemaining + ' días restantes'}
-          </div>
-          <div style="margin-top:10px;"><strong>Estatus:</strong> ${task.Estatus}</div>
+        <p class="activity-description">${task.Descripcion || ''}</p>
+        ${contactosHtml}
+      </div>
+      <div class="dates-section">
+        <div class="detail-item">
+          <span class="detail-label">Fecha de creación</span>
+          <span class="detail-value">${task.Fecha ? new Date(task.Fecha).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}</span>
         </div>
-        <div class="actions-section">
-          <button class="btn btn-complete">${task.Estatus && task.Estatus.toLowerCase() === 'cerrado' ? '🔓 Reabrir' : '✅ Completar'}</button>
-          <button class="btn btn-edit">✏️ Editar</button>
-          <button class="btn btn-delete">🗑️ Eliminar</button>
-          ${mailtoBtnHtml}
+        <div class="detail-item">
+          <span class="detail-label">Fecha límite</span>
+          <span class="detail-value">${task.Fin ? new Date(task.Fin).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) : ''}
         </div>
-      `;
-      taskListContainer.appendChild(card);
-    });
+      </div>
+      <div class="status-section">
+        <div class="days-remaining ${daysClass}">
+          ⏰ ${daysRemaining < 0 ? 'Vencida' : daysRemaining + ' días restantes'}
+        </div>
+        <div style="margin-top:10px;"><strong>Estatus:</strong> ${task.Estatus}</div>
+      </div>
+      <div class="actions-section">
+        <button class="btn btn-complete">${task.Estatus && task.Estatus.toLowerCase() === 'cerrado' ? '🔓 Reabrir' : '✅ Completar'}</button>
+        <button class="btn btn-edit">✏️ Editar</button>
+        <button class="btn btn-delete">🗑️ Eliminar</button>
+        ${mailtoBtnHtml}
+      </div>
+    `;
+    taskListContainer.appendChild(card);
+  });
   } finally {
     // Siempre resetear la bandera al final
     isRendering = false;

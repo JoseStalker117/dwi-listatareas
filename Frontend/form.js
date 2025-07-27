@@ -113,7 +113,7 @@ taskForm.addEventListener("submit", async (e) => {
   
   const Nombre = taskInput.value.trim();
   const Categoria = categoryInput.value.trim();
-  const Descripcion = descriptionInput.value.trim();
+  const Descripcion = descriptionInput.value;
   let Prioridad = priorityInput.value;
   Prioridad = Prioridad === "" ? null : parseInt(Prioridad, 10);
   const Fin = finInput.value;

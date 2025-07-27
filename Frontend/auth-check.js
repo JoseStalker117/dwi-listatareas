@@ -58,11 +58,21 @@ function setupLogout() {
 }
 
 function handleLogout() {
+    // Detener heartbeat
+    if (typeof window.stopHeartbeat === 'function') {
+        window.stopHeartbeat();
+    }
+    
     clearAuthData();
     redirectToLogin();
 }
 
 function clearAuthData() {
+    // Detener heartbeat
+    if (typeof window.stopHeartbeat === 'function') {
+        window.stopHeartbeat();
+    }
+    
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     authToken = null;
@@ -109,6 +119,11 @@ async function authenticatedFetch(url, options = {}) {
 // Función para inicializar la aplicación después de la autenticación
 function initializeApp() {
     console.log('Usuario autenticado:', currentUser);
+    
+    // Iniciar heartbeat
+    if (typeof window.startHeartbeat === 'function') {
+        window.startHeartbeat();
+    }
     
     // Inicializar la aplicación de tareas
     if (typeof initializeTasksApp === 'function') {

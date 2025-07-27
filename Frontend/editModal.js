@@ -132,7 +132,7 @@ editForm.onsubmit = async (e) => {
   const _id = document.getElementById('editId').value;
   const Nombre = document.getElementById('editNombre').value.trim();
   const Categoria = document.getElementById('editCategoria').value.trim();
-  const Descripcion = document.getElementById('editDescripcion').value.trim();
+  const Descripcion = document.getElementById('editDescripcion').value;
   let Prioridad = document.getElementById('editPrioridad').value;
   Prioridad = Prioridad === '' ? null : parseInt(Prioridad, 10);
   const Fin = document.getElementById('editFin').value;
